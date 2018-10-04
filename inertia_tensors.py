@@ -1,5 +1,5 @@
 """
-functions to calculate sets of inertia tensors
+function to calculate sets of inertia tensors
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -12,22 +12,23 @@ __author__ = ('Duncan Campbell')
 
 def inertia_tensors(x, weights=None):
     r"""
-    Calculate the n1 inertia tensors for a set of n2 points of dimension ndim.
+    Calculate the inertia tensors for n1 sets, of n2 points, of dimension ndim.
 
     Parameters
     ----------
     x :  ndarray
         Numpy array of shape (n1, n2, ndim) storing n1 sets of n2 points
-        of dimension ndim.  If an array of shape (n2, ndim) points is passed
+        of dimension ndim.  If an array of shape (n2, ndim) points is passed,
         n1 is assumed to be equal to 1.
 
     weights :  ndarray
-        Numpy array of shape (n1, n2) storing n1 sets of n2 weights
+        Numpy array of shape (n1, n2) storing n1 sets of n2 weights.
+        Default sets weights argument to np.ones((n1,n2)).
 
     Returns
     -------
     I : numpy.ndarray
-        an array of shape (n1,ndim,ndim) of inertia tensors
+        an array of shape (n1, ndim, ndim) storing the n1 inertia tensors
 
     Examples
     --------
