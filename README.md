@@ -1,20 +1,21 @@
 # Intertia Tensors
 
-This package contains functions calculate inertia tensors given collections of n-dimensional points.
+This package contains functions to calculate inertia tensors for collections of n-dimensional points.
 ![](./notebooks/ellipses_plot.png)
+
 
 ## Description
 
-This package contains tools to calculate:
+This package contains functions that calculate the:
 
-* standard inertia tensor,
-* reduced inertia tensor,
-* and the ierative reduced inertia tensor.
+* standard inertia tensor
+* reduced inertia tensor
+* iterative reduced inertia tensor
 
 
 ## Requirements
 
-In order to use the functions in this package, you will need the following python packages installed:
+In order to use the functions in this package, you will need the following Python packages installed:
 
 * numpy
 * astropy
