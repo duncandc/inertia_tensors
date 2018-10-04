@@ -1,4 +1,4 @@
-# Intertia Tensors
+# Inertia Tensors
 
 This package contains functions to calculate inertia tensors for collections of n-dimensional points.
 ![](./notebooks/ellipses_plot.png)
