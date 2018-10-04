@@ -16,6 +16,32 @@ __all__ = ('inertia_tensors',
 __author__ = ('Duncan Campbell')
 
 
+def _process_args(x, weights):
+    """
+    process arguments for inertia tensor functions
+    """
+
+    if len(np.shape(x))==2:
+        x = x[np.newaxis,:,:]
+
+    n1, n2, ndim = np.shape(x)
+
+    if weights is None:
+        weights = np.ones((n1,n2))
+    elif np.shape(weights) == (n2,):
+        weights = weights[np.newaxis,:]
+
+    if np.shape(weights) != (n1,n2):
+        msg = ('weights array must be of shape (n1,n2)')
+        raise ValueError(msg)
+
+    # copy the weights ndim times along a new axis
+    # in order to make them the same shape as x
+    weights = np.repeat(weights[:,:, np.newaxis], ndim, axis=2)
+
+    return x, weights
+
+
 def inertia_tensors(x, weights=None):
     r"""
     Calculate the inertia tensors for n1 sets, of n2 points, of dimension ndim.
@@ -39,24 +65,8 @@ def inertia_tensors(x, weights=None):
     Examples
     --------
     """
-
-    if len(np.shape(x))==2:
-        x = x[np.newaxis,:,:]
-
+    x, weights = _process_args(x, weights)
     n1, n2, ndim = np.shape(x)
-
-    if weights is None:
-        weights = np.ones((n1,n2))
-    elif np.shape(weights) == (n2,):
-        weights = weights[np.newaxis,:]
-
-    if np.shape(weights) != (n1,n2):
-        msg = ('weights array must be of shape (n1,n2)')
-        raise ValueError(msg)
-
-    # copy the weights ndim times along a new axis
-    # in order to make them the same shape as x
-    weights = np.repeat(weights[:,:, np.newaxis], ndim, axis=2)
 
     I = np.einsum('...ij,...ik->...jk', x, x*weights)
     return I/(np.ones((n1,ndim,ndim))*n2)
@@ -86,23 +96,8 @@ def reduced_inertia_tensors(x, weights=None):
     --------
     """
 
-    if len(np.shape(x))==2:
-        x = x[np.newaxis,:,:]
-
+    x, weights = _process_args(x, weights)
     n1, n2, ndim = np.shape(x)
-
-    if weights is None:
-        weights = np.ones((n1,n2))
-    elif np.shape(weights) == (n2,):
-        weights = weights[np.newaxis,:]
-
-    if np.shape(weights) != (n1,n2):
-        msg = ('weights array must be of shape (n1,n2)')
-        raise ValueError(msg)
-
-    # copy the weights ndim times along a new axis
-    # in order to make them the same shape as x
-    weights = np.repeat(weights[:,:, np.newaxis], ndim, axis=2)
 
     r_squared = np.sum(x**2, -1)
     I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
@@ -139,9 +134,7 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=100):
     --------
     """
 
-    if len(np.shape(x))==2:
-        x = x[np.newaxis,:,:]
-
+    x, weights = _process_args(x, weights)
     n1, n2, ndim = np.shape(x)
 
     if ndim == 2:
@@ -154,31 +147,19 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=100):
         msg = ('the iterative reduced inertia tensor only works with ndim = 2 or 3.')
         raise ValueError(msg)
 
-    if weights is None:
-        weights = np.ones((n1,n2))
-    elif np.shape(weights) == (n2,):
-        weights = weights[np.newaxis,:]
-
-    if np.shape(weights) != (n1,n2):
-        msg = ('weights array must be of shape (n1,n2)')
-        raise ValueError(msg)
-
-    # copy the weights ndim times along a new axis
-    # in order to make them the same shape as x
-    weights = np.repeat(weights[:,:, np.newaxis], ndim, axis=2)
-
     r_squared = np.sum(x**2, -1)
     I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
     I = I/(np.ones((n1,ndim,ndim))*n2)
 
     while niter < niter_max:
         evals, evecs = np.linalg.eigh(I)
-        evecs = evecs[::-1] # put in decending order
-        evals = evals[::-1]
+        evecs = evecs[:,::-1,:]  # put in descending order
+        evals = evaks[:,::-1]    # put in descending order
 
         rot = rot_func(*evecs)
-        xx = rotate_vector_collection(rot, x)
-        r_squared = np.sum((xx/evals)**2, -1)
+        rot = np.linalg.inv(rot)
+        xx = rotate_vector_collection(rot, x)  # rotate points into alignment with coordinate axes
+        r_squared = np.sum((xx/evals)**2, -1)  # calculate elliptical radial positions
 
         I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
         I = I/(np.ones((n1,ndim,ndim))*n2)
