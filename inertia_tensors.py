@@ -23,6 +23,8 @@ def _process_args(x, weights):
     if len(np.shape(x))==2:
         x = x[np.newaxis,:,:]
 
+    x = np.atleast_1d(x)
+
     n1, n2, ndim = np.shape(x)
 
     if weights is None:
