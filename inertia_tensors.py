@@ -4,10 +4,9 @@ function to calculate sets of inertia tensors
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import numpy as np
+from rotations.rotate_vector_collection import rotate_vector_collection
 from rotations.rotations2d import rotation_matrices_from_basis as rotation_matrices_from_basis_2d
-from rotations.rotations2d import rotate_vector_collection as rotate_vector_collection_2d
 from rotations.rotations3d import rotation_matrices_from_basis as rotation_matrices_from_basis_3d
-from rotations.rotations2d import rotate_vector_collection as rotate_vector_collection_3d
 
 
 __all__ = ('inertia_tensors',
@@ -104,7 +103,7 @@ def reduced_inertia_tensors(x, weights=None):
     return I/(np.ones((n1,ndim,ndim))*n2)
 
 
-def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=100):
+def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     r"""
     Calculate iterative reduced inertia tensors for n1 sets of n2 points of dimension ndim.
 
@@ -120,7 +119,9 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=100):
         Default sets weights argument to np.ones((n1,n2)).
 
     rtol : float
-        relative tolerance on eignevalues of the inertia tensors
+        relative tolerance on axis ratios
+        the calculate will continue while any axis ratio changes by more than rtol
+        between iterations.
 
     niter_max : int
         maximum nmumber of iterations to perform
@@ -139,30 +140,58 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=100):
 
     if ndim == 2:
         rot_func = rotation_matrices_from_basis_2d
-        rotate_vector_collection = rotate_vector_collection_2d
     elif ndim == 3:
         rot_func = rotation_matrices_from_basis_3d
-        rotate_vector_collection = rotate_vector_collection_3d
     else:
         msg = ('the iterative reduced inertia tensor only works with ndim = 2 or 3.')
         raise ValueError(msg)
 
+    # calculate intial inertia tensor
     r_squared = np.sum(x**2, -1)
     I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
     I = I/(np.ones((n1,ndim,ndim))*n2)
+    evals, evecs = np.linalg.eigh(I)
+    v0 = np.prod(evals,axis=-1)
 
-    while niter < niter_max:
+    evals = np.sqrt(evals)
+    axis_ratios0 = evals/evals[:,0,np.newaxis]
+
+    niter = 1  # iteratively calculate I
+    exit=False
+    while (niter < niter_max) & (exit==False):
+
+        # calculate eignenvectors and values
+        # note that eigh() returns minor axis values first
         evals, evecs = np.linalg.eigh(I)
-        evecs = evecs[:,::-1,:]  # put in descending order
-        evals = evaks[:,::-1]    # put in descending order
+        evecs = evecs[:,::-1,:]
+        evals = evals[:,::-1]
 
+        # calculate rotation matrix between eigen basis and axis-aligned basis
+        evecs = [evecs[:,i,:] for i in range(ndim)]  # re-arrange eigenvalues
         rot = rot_func(*evecs)
         rot = np.linalg.inv(rot)
+
+        # rotate distribution to align with axis
         xx = rotate_vector_collection(rot, x)  # rotate points into alignment with coordinate axes
-        r_squared = np.sum((xx/evals)**2, -1)  # calculate elliptical radial positions
+
+        evals = np.sqrt(evals)
+        scale = v0/np.prod(evals,axis=-1)  # re-scale axis to maintain constant volume
+        evals = evals*scale[:,np.newaxis]
+
+        # calculate axis ratios
+        axis_ratios = evals/evals[:,0,np.newaxis]
+        da = np.fabs(axis_ratios - axis_ratios0)/axis_ratios0
+        if np.max(da)<=rtol:
+            exit = True
+
+        # calculate elliptical radial distances
+        r_squared = np.sum((xx/evals[:,np.newaxis])**2, -1)
 
         I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
         I = I/(np.ones((n1,ndim,ndim))*n2)
+
+        axis_ratios0 = axis_ratios
+        niter += 1
 
     return I
 
