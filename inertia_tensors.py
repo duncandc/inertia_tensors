@@ -70,7 +70,8 @@ def inertia_tensors(x, weights=None):
     n1, n2, ndim = np.shape(x)
 
     I = np.einsum('...ij,...ik->...jk', x, x*weights)
-    return I/(np.ones((n1,ndim,ndim))*n2)
+    m = np.sum(weights, axis=1)
+    return I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
 
 
 def reduced_inertia_tensors(x, weights=None):
@@ -102,7 +103,8 @@ def reduced_inertia_tensors(x, weights=None):
 
     r_squared = np.sum(x**2, -1)
     I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
-    return I/(np.ones((n1,ndim,ndim))*n2)
+    m = np.sum(weights, axis=1)
+    return I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
 
 
 def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
@@ -151,7 +153,8 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     # calculate intial inertia tensor
     r_squared = np.sum(x**2, -1)
     I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
-    I = I/(np.ones((n1,ndim,ndim))*n2)
+    m = np.sum(weights, axis=1)
+    I = I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
     evals, evecs = np.linalg.eigh(I)
     v0 = np.prod(evals,axis=-1)
 
@@ -190,7 +193,8 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         r_squared = np.sum((xx/evals[:,np.newaxis])**2, -1)
 
         I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
-        I = I/(np.ones((n1,ndim,ndim))*n2)
+        m = np.sum(weights, axis=1)
+        I = I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
 
         axis_ratios0 = axis_ratios
         niter += 1
