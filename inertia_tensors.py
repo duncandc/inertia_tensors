@@ -175,7 +175,7 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     evals = np.sqrt(evals[:,::-1])
 
     # re-arrange evecs
-    evecs = [evecs[:,i,:] for i in range(ndim)]
+    evecs = [x[:,:,i] for i in range(ndim)]
 
     print(0, evecs)
 
@@ -217,7 +217,7 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         evals = np.sqrt(evals[:,::-1])
 
         # re-arrange evecs
-        evecs = [evecs[:,i,:] for i in range(ndim)]
+        evecs = [x[:,:,i] for i in range(ndim)]
         # rotate evecs back
         for i in range(ndim):
             evecs[i] = rotate_vector_collection(rot, evecs[i])
