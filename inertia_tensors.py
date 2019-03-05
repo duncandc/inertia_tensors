@@ -173,8 +173,10 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     evecs = evecs[:,::-1,:]
     evals = np.sqrt(evals[:,::-1])
 
+    print(0, evals)
+
     # ellipsoidal volume
-    v0 = 4.0/3.0*np.pi*np.prod(evals,axis=-1)
+    v0 = (4.0/3.0)*np.pi*np.prod(evals,axis=-1)
 
     # intial axis ratios, a/a, b/a, c/a
     axis_ratios0 = evals/evals[:,0,np.newaxis]
@@ -211,9 +213,9 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         evals = np.sqrt(evals[:,::-1])
 
         # re-scale axis to maintain constant volume
-        v = 4.0/3.0*np.pi*np.prod(evals,axis=-1)
+        v = (4.0/3.0)*np.pi*np.prod(evals,axis=-1)
         scale = v/v0
-        evals = evals*scale[:,np.newaxis]
+        evals = evals/scale[:,np.newaxis]
 
         # calculate axis ratios
         axis_ratios = evals/evals[:,0,np.newaxis]
@@ -221,7 +223,7 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         if np.max(da)<=rtol:
             exit = True
 
-        print(da, v/v0, evals)
+        print(niter, evals)
 
         axis_ratios0 = axis_ratios
         niter += 1
