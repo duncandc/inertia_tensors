@@ -170,7 +170,7 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     
     evals, evecs = np.linalg.eigh(I)
     # put in order a,b,c
-    evecs = evecs[:,::-1,:]
+    #evecs = evecs[:,::-1,:]
     evals = np.sqrt(evals[:,::-1])
 
     print(0, evals)
@@ -209,7 +209,7 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         # note that eigh() returns minor axis values first
         evals, evecs = np.linalg.eigh(I)
         # put in order a,b,c
-        evecs = evecs[:,::-1,:]
+        #evecs = evecs[:,::-1,:]
         evals = np.sqrt(evals[:,::-1])
 
         # re-scale axis to maintain constant volume
