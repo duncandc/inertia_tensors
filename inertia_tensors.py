@@ -169,7 +169,6 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     I = I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
 
     evals, evecs = np.linalg.eigh(I)
-    print(evecs)
     # put in order a,b,c
     #evecs = evecs[:,::-1,:]
     evecs = evecs[:,:,::-1]
@@ -178,7 +177,7 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     # re-arrange evecs
     evecs = [evecs[:,i,:] for i in range(ndim)]
 
-    print(0, evals)
+    print(0, print(evecs))
 
     # ellipsoidal volume
     v0 = (4.0/3.0)*np.pi*np.prod(evals,axis=-1)
