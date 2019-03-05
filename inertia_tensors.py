@@ -175,6 +175,9 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     evecs = evecs[:,:,::-1]
     evals = np.sqrt(evals[:,::-1])
 
+    # re-arrange evecs
+    evecs = [evecs[:,i,:] for i in range(ndim)]
+
     print(0, evals)
 
     # ellipsoidal volume
@@ -188,7 +191,6 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     while (niter < niter_max) & (exit==False):
 
         # calculate rotation matrix between eigen basis and axis-aligned basis
-        evecs = [evecs[:,i,:] for i in range(ndim)]
         rot = rot_func(*evecs)
         inv_rot = np.linalg.inv(rot)
 
@@ -215,8 +217,11 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         evecs = evecs[:,:,::-1]
         evals = np.sqrt(evals[:,::-1])
 
+        # re-arrange evecs
+        evecs = [evecs[:,i,:] for i in range(ndim)]
         # rotate evecs back
-        evecs = rotate_vector_collection(rot, evecs)
+        for i in range(ndim):
+            evecs[i] = rotate_vector_collection(rot, evecs[i])
 
         # re-scale axis to maintain constant volume
         v = (4.0/3.0)*np.pi*np.prod(evals,axis=-1)
