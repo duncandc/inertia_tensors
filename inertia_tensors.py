@@ -167,10 +167,16 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
     m = np.sum(weights, axis=1)
     I = I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
+    
     evals, evecs = np.linalg.eigh(I)
-    v0 = np.prod(evals,axis=-1)
+    # put in order a,b,c
+    evecs = evecs[:,::-1,:]
+    evals = np.sqrt(evals[:,::-1])
 
-    evals = np.sqrt(evals)
+    # ellipsoidal volume
+    v0 = 4.0/3.0*np.pi*np.prod(evals,axis=-1)
+
+    # intial axis ratios, a/a, b/a, c/a
     axis_ratios0 = evals/evals[:,0,np.newaxis]
 
     niter = 1  # iteratively calculate I
@@ -180,8 +186,9 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         # calculate eignenvectors and values
         # note that eigh() returns minor axis values first
         evals, evecs = np.linalg.eigh(I)
+        # put in order a,b,c
         evecs = evecs[:,::-1,:]
-        evals = evals[:,::-1]
+        evals = np.sqrt(evals[:,::-1])
 
         # calculate rotation matrix between eigen basis and axis-aligned basis
         evecs = [evecs[:,i,:] for i in range(ndim)]  # re-arrange eigenvalues
@@ -189,10 +196,11 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         rot = np.linalg.inv(rot)
 
         # rotate distribution to align with axis
-        xx = rotate_vector_collection(rot, x)  # rotate points into alignment with coordinate axes
+        xx = rotate_vector_collection(rot, x)
 
-        evals = np.sqrt(evals)
-        scale = v0/np.prod(evals,axis=-1)  # re-scale axis to maintain constant volume
+        # re-scale axis to maintain constant volume
+        v = 4.0/3.0*np.pi*np.prod(evals,axis=-1)
+        scale = v0/v
         evals = evals*scale[:,np.newaxis]
 
         # calculate axis ratios
