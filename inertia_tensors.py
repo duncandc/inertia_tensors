@@ -183,13 +183,6 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
     exit=False
     while (niter < niter_max) & (exit==False):
 
-        # calculate eignenvectors and values
-        # note that eigh() returns minor axis values first
-        evals, evecs = np.linalg.eigh(I)
-        # put in order a,b,c
-        evecs = evecs[:,::-1,:]
-        evals = np.sqrt(evals[:,::-1])
-
         # calculate rotation matrix between eigen basis and axis-aligned basis
         evecs = [evecs[:,i,:] for i in range(ndim)]  # re-arrange eigenvalues
         rot = rot_func(*evecs)
@@ -203,16 +196,9 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         scale = v0/v
         evals = evals*scale[:,np.newaxis]
 
-        # calculate axis ratios
-        axis_ratios = evals/evals[:,0,np.newaxis]
-        da = np.fabs(axis_ratios - axis_ratios0)/axis_ratios0
-        if np.max(da)<=rtol:
-            exit = True
-
         # calculate elliptical radial distances
         r_squared = np.sum((xx/evals[:,np.newaxis])**2, -1)
-        print(da, evals)
-
+    
         # ignore points at r=0
         mask = (r_squared==0.0)
         weights[mask] = 0.0
@@ -221,6 +207,21 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
         m = np.sum(weights, axis=1)
         I = I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
+
+        # calculate eignenvectors and values
+        # note that eigh() returns minor axis values first
+        evals, evecs = np.linalg.eigh(I)
+        # put in order a,b,c
+        evecs = evecs[:,::-1,:]
+        evals = np.sqrt(evals[:,::-1])
+
+        # calculate axis ratios
+        axis_ratios = evals/evals[:,0,np.newaxis]
+        da = np.fabs(axis_ratios - axis_ratios0)/axis_ratios0
+        if np.max(da)<=rtol:
+            exit = True
+
+        print(da, evals)
 
         axis_ratios0 = axis_ratios
         niter += 1
