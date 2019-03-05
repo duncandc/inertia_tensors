@@ -212,7 +212,7 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
 
         # re-scale axis to maintain constant volume
         v = 4.0/3.0*np.pi*np.prod(evals,axis=-1)
-        scale = v0/v
+        scale = v/v0
         evals = evals*scale[:,np.newaxis]
 
         # calculate axis ratios
