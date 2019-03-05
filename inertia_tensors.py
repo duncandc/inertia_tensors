@@ -202,10 +202,8 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
             exit = True
 
         # calculate elliptical radial distances
-        try:
-            r_squared = np.sum((xx/evals[:,np.newaxis])**2, -1)
-        except RuntimeWarning:
-            print(evals)
+        r_squared = np.sum((xx/evals[:,np.newaxis])**2, -1)
+        print(evals)
 
         # ignore points at r=0
         mask = (r_squared==0.0)
