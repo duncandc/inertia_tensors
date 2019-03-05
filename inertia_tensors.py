@@ -191,11 +191,6 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         # rotate distribution to align with axis
         xx = rotate_vector_collection(rot, x)
 
-        # re-scale axis to maintain constant volume
-        v = 4.0/3.0*np.pi*np.prod(evals,axis=-1)
-        scale = v0/v
-        evals = evals*scale[:,np.newaxis]
-
         # calculate elliptical radial distances
         r_squared = np.sum((xx/evals[:,np.newaxis])**2, -1)
     
@@ -214,6 +209,11 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         # put in order a,b,c
         evecs = evecs[:,::-1,:]
         evals = np.sqrt(evals[:,::-1])
+
+        # re-scale axis to maintain constant volume
+        v = 4.0/3.0*np.pi*np.prod(evals,axis=-1)
+        scale = v0/v
+        evals = evals*scale[:,np.newaxis]
 
         # calculate axis ratios
         axis_ratios = evals/evals[:,0,np.newaxis]
