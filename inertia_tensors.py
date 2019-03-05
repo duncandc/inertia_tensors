@@ -226,7 +226,7 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
         if np.max(da)<=rtol:
             exit = True
 
-        print(niter, evals)
+        print(niter, evecs)
 
         axis_ratios0 = axis_ratios
         niter += 1
