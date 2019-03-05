@@ -102,6 +102,12 @@ def reduced_inertia_tensors(x, weights=None):
     n1, n2, ndim = np.shape(x)
 
     r_squared = np.sum(x**2, -1)
+    
+    # ignore points at r=0
+    mask = (r_squared==0.0)
+    weights[mask] = 0.0
+    r_squared[mask] = 1.0
+    
     I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
     m = np.sum(weights, axis=1)
     return I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
@@ -152,6 +158,12 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
 
     # calculate intial inertia tensor
     r_squared = np.sum(x**2, -1)
+
+    # ignore points at r=0
+    mask = (r_squared==0.0)
+    weights[mask] = 0.0
+    r_squared[mask] = 1.0
+
     I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
     m = np.sum(weights, axis=1)
     I = I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
@@ -191,6 +203,11 @@ def iterative_inertia_tensors(x, weights=None, rtol=0.01, niter_max=5):
 
         # calculate elliptical radial distances
         r_squared = np.sum((xx/evals[:,np.newaxis])**2, -1)
+
+        # ignore points at r=0
+        mask = (r_squared==0.0)
+        weights[mask] = 0.0
+        r_squared[mask] = 1.0
 
         I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
         m = np.sum(weights, axis=1)
