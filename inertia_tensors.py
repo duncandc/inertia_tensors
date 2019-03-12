@@ -248,9 +248,9 @@ def iterative_inertia_tensors_3D(x, weights=None, rtol=0.01, niter_max=5):
 
     # re-construct inertia tensor
     m = np.tile(np.identity(3), (n1,1,1))
-    m[:,0,0] = A
-    m[:,1,1] = B
-    m[:,2,2] = C
+    m[:,0,0] = A**2
+    m[:,1,1] = B**2
+    m[:,2,2] = C**2
 
     s = np.zeros((n1,3,3))
     s[:,:,0] = Av
@@ -261,9 +261,9 @@ def iterative_inertia_tensors_3D(x, weights=None, rtol=0.01, niter_max=5):
 
     # check reconstruction
     evals, evecs = np.linalg.eigh(I)
-    assert np.allclose(evals[:,0],C)
-    assert np.allclose(evals[:,1],B)
-    assert np.allclose(evals[:,2],A)
+    assert np.allclose(np.sqrt(evals[:,0]),C)
+    assert np.allclose(np.sqrt(evals[:,1]),B)
+    assert np.allclose(np.sqrt(evals[:,2]),A)
 
     return I
 
