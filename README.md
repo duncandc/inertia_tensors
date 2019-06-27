@@ -30,7 +30,7 @@ Place this directory in your PYTHONPATH.  The various functions can then be impo
 from inertia_tensors import inertia_tensors
 ```
 
-You can run the testing suite for this package using [pytest](https://docs.pytest.org/en/latest/) framwork by executing the following command in the package directory:
+You can run the testing suite for this package using the [pytest](https://docs.pytest.org/en/latest/) framework by executing the following command in the package directory:
 
 ```
 pytest
