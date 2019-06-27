@@ -1,6 +1,6 @@
 # Inertia Tensors
 
-This package contains functions to calculate inertia tensors for collections of n-dimensional points.
+This package contains functions to calculate [inertia tensors](https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_tensor) for collections of n-dimensional points.
 ![](./notebooks/ellipses_plot.png)
 
 
@@ -28,6 +28,12 @@ Place this directory in your PYTHONPATH.  The various functions can then be impo
 
 ```
 from inertia_tensors import inertia_tensors
+```
+
+You can run the testing suite for this package using [pytest](https://docs.pytest.org/en/latest/) framwork by executing the following command in the package directory:
+
+```
+pytest
 ```
 
 
