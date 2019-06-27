@@ -1,8 +1,8 @@
 """
 """
 import numpy as np
-from ..inertia_tensors import inertia_tensors
-from ..utils import sample_ellipsoidal_volume
+from inertia_tensors.inertia_tensors import inertia_tensors
+from inertia_tensors.utils import sample_ellipsoidal_volume
 
 
 __all__ = ('test_1',)
