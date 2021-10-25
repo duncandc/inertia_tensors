@@ -41,7 +41,7 @@ def _process_args(x, weights):
     return x, weights
 
 
-def _principal_axes_3D(I):
+def principal_axes_3D(I):
     """
     Return the principle axes and half-lengths of an ellipsoid defined by I
 
@@ -128,19 +128,22 @@ def reduced_inertia_tensors(x, weights=None):
     Examples
     --------
     """
-
-    x, weights = _process_args(x, weights)
-    n1, n2, ndim = np.shape(x)
-
     r_squared = np.sum(x**2, -1)
-
-    # ignore points at r=0
     mask = (r_squared==0.0)
     weights[mask] = 0.0
     r_squared[mask] = 1.0
+   # weights = weights/r_squared
+    x, weights = _process_args(x, weights/r_squared)
+    n1, n2, ndim = np.shape(x)
 
-    I = np.einsum('...ij,...ik->...jk', x/(r_squared[:,:,np.newaxis]), x*weights)
+    #r_squared = np.sum(x**2, -1)
+
+    # ignore points at r=0
+    
+    I = np.einsum('...ij,...ik->...jk', x , x*weights)
+    
     m = np.sum(weights, axis=1)
+    
     return I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
 
 
@@ -174,14 +177,15 @@ def iterative_inertia_tensors_3D(x, weights=None, rtol=0.01, niter_max=5):
     Examples
     --------
     """
-
-    x, weights = _process_args(x, weights)
-    n1, n2, ndim = np.shape(x)
+    
+    
 
     rot_func = rotation_matrices_from_basis_3d
-
+    
     I = reduced_inertia_tensors(x, weights)
-    A, B, C, Av, Bv, Cv = _principal_axes_3D(I)
+    evals, evecs = np.linalg.eigh(I)
+    #print(I)
+    A, B, C, Av, Bv, Cv = principal_axes_3D(I)
 
     # intial ellipsoidal volume
     ellipsoid_volume_0 = (4.0/3.0)*np.pi*A*B*C
@@ -192,8 +196,12 @@ def iterative_inertia_tensors_3D(x, weights=None, rtol=0.01, niter_max=5):
 
     niter = 1  # iteratively calculate I
     exit=False
+    
+    x, weights = _process_args(x, weights)
+    n1, n2, ndim = np.shape(x)
+    
     while (niter < niter_max) & (exit==False):
-
+        
         # calculate rotation matrix between eigen basis and axis-aligned basis
         rot = rot_func(Av, Bv, Cv)
         inv_rot = np.linalg.inv(rot)
@@ -210,13 +218,15 @@ def iterative_inertia_tensors_3D(x, weights=None, rtol=0.01, niter_max=5):
         mask = (r_squared==0.0)
         weights[mask] = 0.0
         r_squared[mask] = 1.0
-
+       # print(weights.shape, r_squared.shape )
+        #weights = weights/r_squared[:,:,np.newaxis]
         # calculate eigen tensors
-        I = np.einsum('...ij,...ik->...jk', xx/(r_squared[:,:,np.newaxis]), xx*weights)
-        m = np.sum(weights, axis=1)
+        I = np.einsum('...ij,...ik->...jk', xx , xx*weights/r_squared[:,:,np.newaxis])
+       # I = np.einsum('...ij,...ik->...jk', xx/(r_squared[:,:,np.newaxis]), xx*weights)
+        m = np.sum(weights/r_squared[:,:,np.newaxis], axis=1)
         I = I/(np.ones((n1,ndim,ndim))*m[:,np.newaxis])
 
-        A, B, C, Av, Bv, Cv = _principal_axes_3D(I)
+        A, B, C, Av, Bv, Cv = principal_axes_3D(I)
 
         # rotate back into original frame
         Av = rotate_vector_collection(rot, Av)
@@ -265,7 +275,7 @@ def iterative_inertia_tensors_3D(x, weights=None, rtol=0.01, niter_max=5):
     assert np.allclose(np.sqrt(evals[:,1]),B)
     assert np.allclose(np.sqrt(evals[:,2]),A)
 
-    return I
+    return I, niter
 
 
 
