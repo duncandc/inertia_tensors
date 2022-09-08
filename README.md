@@ -24,6 +24,12 @@ In order to use the functions in this package, you will need the following Pytho
 
 ## Installation
 
+It could be installed as:
+
+```
+pip install --user .
+```
+
 Place this directory in your PYTHONPATH.  The various functions can then be imported as, e.g.:
 
 ```
