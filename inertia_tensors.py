@@ -10,9 +10,9 @@ from rotations.rotations3d import rotation_matrices_from_basis as rotation_matri
 from rotations.vector_utilities import angles_between_list_of_vectors
 
 
-#__all__ = ('inertia_tensors',
-#           'reduced_inertia_tensors',
-#           'iterative_inertia_tensors_3D')
+__all__ = ('inertia_tensors',
+           'reduced_inertia_tensors',
+           'iterative_inertia_tensors_3D')
 __author__ = ('Duncan Campbell')
 
 
